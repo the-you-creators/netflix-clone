@@ -1,0 +1,265 @@
+import type { Video, VideoInput } from '@/types/video';
+import { config } from '@/utils/config';
+
+export interface DatabaseService {
+  getVideos(): Promise<Video[]>;
+  getVideoById(id: string): Promise<Video | null>;
+  searchVideos(query: string): Promise<Video[]>;
+  addVideo(video: VideoInput): Promise<Video>;
+  updateVideo(id: string, video: VideoInput): Promise<Video>;
+  deleteVideo(id: string): Promise<void>;
+}
+
+// ローカル開発用のモックデータベース（ブラウザで動作）
+class MockDatabase implements DatabaseService {
+  private videos: Video[] = [];
+
+  constructor() {
+    // 初期データをローカルストレージから読み込み
+    const stored = localStorage.getItem('netflix-clone-videos');
+    if (stored) {
+      this.videos = JSON.parse(stored).map((v: any) => ({
+        ...v,
+        uploadedAt: new Date(v.uploadedAt),
+        updatedAt: new Date(v.updatedAt),
+      }));
+    } else {
+      // サンプルデータ
+      this.videos = [
+        {
+          id: '1',
+          title: 'サンプル動画 1',
+          description: 'これは最初のサンプル動画です',
+          filename: 'sample1.mp4',
+          thumbnail: 'sample1-thumb.jpg',
+          duration: 120,
+          uploadedAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+        {
+          id: '2',
+          title: 'サンプル動画 2',
+          description: 'これは2つ目のサンプル動画です',
+          filename: 'sample2.mp4',
+          thumbnail: 'sample2-thumb.jpg',
+          duration: 180,
+          uploadedAt: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-02'),
+        },
+      ];
+      this.save();
+    }
+  }
+
+  private save() {
+    localStorage.setItem('netflix-clone-videos', JSON.stringify(this.videos));
+  }
+
+  async getVideos(): Promise<Video[]> {
+    return [...this.videos].sort((a, b) => 
+      b.uploadedAt.getTime() - a.uploadedAt.getTime()
+    );
+  }
+
+  async getVideoById(id: string): Promise<Video | null> {
+    return this.videos.find(v => v.id === id) || null;
+  }
+
+  async searchVideos(query: string): Promise<Video[]> {
+    const lowerQuery = query.toLowerCase();
+    return this.videos
+      .filter(v => v.title.toLowerCase().includes(lowerQuery))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  async addVideo(video: VideoInput): Promise<Video> {
+    const newVideo: Video = {
+      id: crypto.randomUUID(),
+      title: video.title,
+      description: video.description,
+      filename: video.file.name,
+      thumbnail: video.thumbnail?.name || undefined,
+      duration: undefined,
+      uploadedAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.videos.push(newVideo);
+    this.save();
+    return newVideo;
+  }
+
+  async updateVideo(id: string, video: VideoInput): Promise<Video> {
+    const index = this.videos.findIndex(v => v.id === id);
+    if (index === -1) throw new Error('Video not found');
+    
+    this.videos[index] = {
+      ...this.videos[index],
+      title: video.title,
+      description: video.description,
+      filename: video.file.name,
+      thumbnail: video.thumbnail?.name || this.videos[index].thumbnail,
+      updatedAt: new Date(),
+    };
+    
+    this.save();
+    return this.videos[index];
+  }
+
+  async deleteVideo(id: string): Promise<void> {
+    const index = this.videos.findIndex(v => v.id === id);
+    if (index !== -1) {
+      this.videos.splice(index, 1);
+      this.save();
+    }
+  }
+}
+
+class SupabaseDatabase implements DatabaseService {
+  private supabase: any;
+
+  constructor() {
+    if (!config.database.url || !config.database.key) {
+      throw new Error('Supabase configuration is missing');
+    }
+    
+    // Supabaseは本番環境でのみ動的にインポート
+    this.initSupabase();
+  }
+
+  private async initSupabase() {
+    const { createClient } = await import('@supabase/supabase-js');
+    this.supabase = createClient(config.database.url!, config.database.key!);
+  }
+
+  async getVideos(): Promise<Video[]> {
+    const { data, error } = await this.supabase
+      .from('videos')
+      .select('*')
+      .order('uploaded_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    return (data || []).map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      filename: row.filename,
+      thumbnail: row.thumbnail,
+      duration: row.duration,
+      uploadedAt: new Date(row.uploaded_at),
+      updatedAt: new Date(row.updated_at),
+    }));
+  }
+
+  async getVideoById(id: string): Promise<Video | null> {
+    const { data, error } = await this.supabase
+      .from('videos')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+    
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      filename: data.filename,
+      thumbnail: data.thumbnail,
+      duration: data.duration,
+      uploadedAt: new Date(data.uploaded_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
+
+  async searchVideos(query: string): Promise<Video[]> {
+    const { data, error } = await this.supabase
+      .from('videos')
+      .select('*')
+      .ilike('title', `%${query}%`)
+      .order('title');
+    
+    if (error) throw error;
+    
+    return (data || []).map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      filename: row.filename,
+      thumbnail: row.thumbnail,
+      duration: row.duration,
+      uploadedAt: new Date(row.uploaded_at),
+      updatedAt: new Date(row.updated_at),
+    }));
+  }
+
+  async addVideo(video: VideoInput): Promise<Video> {
+    const { data, error } = await this.supabase
+      .from('videos')
+      .insert({
+        title: video.title,
+        description: video.description,
+        filename: video.file.name,
+        thumbnail: video.thumbnail?.name || null,
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      filename: data.filename,
+      thumbnail: data.thumbnail,
+      duration: data.duration,
+      uploadedAt: new Date(data.uploaded_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
+
+  async updateVideo(id: string, video: VideoInput): Promise<Video> {
+    const { data, error } = await this.supabase
+      .from('videos')
+      .update({
+        title: video.title,
+        description: video.description,
+        filename: video.file.name,
+        thumbnail: video.thumbnail?.name || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      filename: data.filename,
+      thumbnail: data.thumbnail,
+      duration: data.duration,
+      uploadedAt: new Date(data.uploaded_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
+
+  async deleteVideo(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('videos')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+}
+
+// 開発環境では常にMockDatabaseを使用
+export const database: DatabaseService = new MockDatabase();

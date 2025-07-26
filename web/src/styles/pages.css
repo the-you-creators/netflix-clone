@@ -1,0 +1,399 @@
+/* Home Page Styles */
+.home-page {
+  min-height: 100vh;
+  background: #141414;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  color: #e50914;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-link {
+  color: #999;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: white;
+}
+
+.home-main {
+  padding: 20px 0;
+}
+
+.error-message {
+  text-align: center;
+  color: #f85149;
+  padding: 20px;
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+  border-radius: 8px;
+  margin: 20px 40px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  color: white;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #e50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #999;
+}
+
+.no-results {
+  text-align: center;
+  padding: 100px 20px;
+  color: #999;
+  font-size: 18px;
+}
+
+/* Video Detail Page Styles */
+.video-detail-page {
+  min-height: 100vh;
+  background: #141414;
+  color: white;
+}
+
+.detail-header {
+  padding: 20px 40px;
+  background: rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.back-button {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.error-container h2 {
+  color: #f85149;
+  margin-bottom: 10px;
+}
+
+.error-container p {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #999;
+}
+
+.error-container button {
+  margin-top: 20px;
+  padding: 10px 30px;
+  background: #e50914;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.detail-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.video-preview {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+
+.preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.preview-placeholder {
+  width: 100%;
+  height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 120px;
+  font-weight: bold;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid white;
+  color: white;
+  padding: 20px 40px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+.play-overlay:hover {
+  background: #e50914;
+  border-color: #e50914;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.play-icon {
+  font-size: 24px;
+}
+
+.video-info-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.video-title {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.video-metadata {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+  color: #999;
+  font-size: 16px;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.video-description {
+  margin-bottom: 40px;
+}
+
+.video-description h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.video-description p {
+  line-height: 1.6;
+  color: #ccc;
+  font-size: 16px;
+}
+
+.video-details {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 8px;
+}
+
+.video-details h3 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.video-details dl {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 15px;
+}
+
+.video-details dt {
+  color: #999;
+  font-weight: 500;
+}
+
+.video-details dd {
+  color: #ccc;
+  margin: 0;
+  word-break: break-all;
+}
+
+/* Admin Page Styles */
+.admin-page {
+  min-height: 100vh;
+  background: #141414;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.admin-header .logo {
+  color: #e50914;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.admin-header .nav-menu {
+  display: flex;
+  gap: 30px;
+}
+
+.admin-header .nav-link {
+  color: #999;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.admin-header .nav-link:hover,
+.admin-header .nav-link.active {
+  color: white;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 40px 20px;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-footer {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .home-header,
+  .admin-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .logo {
+    font-size: 24px;
+  }
+
+  .admin-header .logo {
+    font-size: 20px;
+  }
+
+  .nav-menu,
+  .admin-header .nav-menu {
+    gap: 20px;
+  }
+
+  .nav-link {
+    font-size: 14px;
+  }
+
+  .detail-header {
+    padding: 15px 20px;
+  }
+
+  .video-title {
+    font-size: 28px;
+  }
+
+  .video-metadata {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .video-details dl {
+    grid-template-columns: 1fr;
+  }
+
+  .video-details dt {
+    margin-bottom: 5px;
+  }
+
+  .admin-main {
+    padding: 20px 10px;
+  }
+}

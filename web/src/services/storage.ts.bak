@@ -1,0 +1,68 @@
+import { config } from '@/utils/config';
+
+export interface StorageService {
+  uploadVideo(file: File): Promise<string>;
+  getVideoUrl(filename: string): string;
+  deleteVideo(filename: string): Promise<void>;
+}
+
+class LocalStorage implements StorageService {
+  async uploadVideo(file: File): Promise<string> {
+    // ローカル開発環境では、実際のファイルアップロードはシミュレートのみ
+    // 実際のファイルは public/videos に手動で配置する必要がある
+    console.log(`[Local Storage] Video upload simulated: ${file.name}`);
+    return file.name;
+  }
+
+  getVideoUrl(filename: string): string {
+    return `${config.storage.basePath}/${filename}`;
+  }
+
+  async deleteVideo(filename: string): Promise<void> {
+    console.log(`[Local Storage] Video deletion simulated: ${filename}`);
+  }
+}
+
+class SupabaseStorage implements StorageService {
+  private supabase;
+  private bucketName = 'videos';
+
+  constructor() {
+    if (!config.database.url || !config.database.key) {
+      throw new Error('Supabase configuration is missing');
+    }
+    
+    this.supabase = createClient(config.database.url, config.database.key);
+  }
+
+  async uploadVideo(file: File): Promise<string> {
+    const filename = `${Date.now()}_${file.name}`;
+    
+    const { error } = await this.supabase.storage
+      .from(this.bucketName)
+      .upload(filename, file);
+    
+    if (error) throw error;
+    
+    return filename;
+  }
+
+  getVideoUrl(filename: string): string {
+    const { data } = this.supabase.storage
+      .from(this.bucketName)
+      .getPublicUrl(filename);
+    
+    return data.publicUrl;
+  }
+
+  async deleteVideo(filename: string): Promise<void> {
+    const { error } = await this.supabase.storage
+      .from(this.bucketName)
+      .remove([filename]);
+    
+    if (error) throw error;
+  }
+}
+
+// 開発環境では常にLocalStorageを使用
+export const storage: StorageService = new LocalStorage();
